@@ -4,6 +4,7 @@
 #include "environment-variables.hh"
 #include "util.hh"
 #include "exec.hh"
+#include <algorithm>
 
 namespace nix {
 
@@ -146,7 +147,7 @@ std::unique_ptr<SSHMaster::Connection> SSHMaster::startCommand(
         for (auto const& arg : args) {
             command += arg;
         }
-        printTalkative("SSH command ", command);
+        std::cout << command;
 
         nix::execvpe(args.begin()->c_str(), stringsToCharPtrs(args).data(), stringsToCharPtrs(env).data());
 
