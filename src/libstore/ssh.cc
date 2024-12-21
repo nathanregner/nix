@@ -141,6 +141,13 @@ std::unique_ptr<SSHMaster::Connection> SSHMaster::startCommand(
 
         args.splice(args.end(), std::move(command));
         auto env = createSSHEnv();
+
+        std::string command;
+        for (auto const& arg : args) {
+            command += arg;
+        }
+        printTalkative("SSH command ", command);
+
         nix::execvpe(args.begin()->c_str(), stringsToCharPtrs(args).data(), stringsToCharPtrs(env).data());
 
         // could not exec ssh/bash
