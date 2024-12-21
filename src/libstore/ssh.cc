@@ -109,12 +109,14 @@ std::unique_ptr<SSHMaster::Connection> SSHMaster::startCommand(
     ProcessOptions options;
     options.dieWithParent = false;
 
-    if (!fakeSSH && !useMaster) {
-        logger->pause();
-    }
-    Finally cleanup = [&]() { logger->resume(); };
+    // if (!fakeSSH && !useMaster) {
+    //     logger->pause();
+    // }
+    // Finally cleanup = [&]() { logger->resume(); };
 
     conn->sshPid = startProcess([&]() {
+        printTalkative("SSH: starting");
+
         restoreProcessContext();
 
         close(in.writeSide.get());
@@ -129,6 +131,8 @@ std::unique_ptr<SSHMaster::Connection> SSHMaster::startCommand(
 
         Strings args;
 
+        printTalkative("SSH: building");
+
         if (!fakeSSH) {
             args = { "ssh", host.c_str(), "-x" };
             addCommonSSHOpts(args);
@@ -141,13 +145,14 @@ std::unique_ptr<SSHMaster::Connection> SSHMaster::startCommand(
         }
 
         args.splice(args.end(), std::move(command));
-        auto env = createSSHEnv();
 
         std::string command;
         for (auto const& arg : args) {
             command += arg;
         }
-        std::cout << command;
+        printTalkative("SSH: connecting: %s", command);
+
+        auto env = createSSHEnv();
 
         nix::execvpe(args.begin()->c_str(), stringsToCharPtrs(args).data(), stringsToCharPtrs(env).data());
 
